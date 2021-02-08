@@ -1,0 +1,38 @@
+-create the virtual environment 
+Mac/Linux: | python3 -m venv py3Env                     
+-------------+----------------------------------------------------
+Windows:   | python -m venv py3Env  
+
+--keyword for activating a virtual environment is source or call,
+--depending on which OS and terminal we're using
+------------------------------------------------------------------
+ Mac/Linux: | source py3Env/bin/activate                         
+------------------------------------------------------------------
+ Windows command prompt : | call py3Env\Scripts\activate       
+------------------------------------------------------------------
+ Windows git bash : | source py3Env/Scripts/activate         
+------------------------------------------------------------------
+--To deactivate a virtual environment type deactivate or exit 
+-- if your virtual machine is up it looks like this:
+(py3Env) $
+
+For a better understanding visit this medium article
+https://medium.com/python-pandemonium/better-python-dependency-and-package-management-b5d8ea29dff1
+
+
+-----Steps to setup project----
+
+--create virtual environment
+python3 -m venv <virtual_env> 
+
+--
+
+--install package
+pip3 install <package>
+
+--save installed packages with this command
+pip freeze > requirements.txt
+
+
+--find information about individual packages from the requiements.txt 
+$pip show <packagename>.
