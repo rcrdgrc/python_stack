@@ -1,0 +1,16 @@
+body {
+    margin: 0;
+    padding: 0px;
+}
+
+.color1 {
+    background-color: red;
+    width: 200px;
+    height: 200px;
+
+}
+.color2 {
+    background-color: black;
+    width: 200px;
+    height: 200px;
+}

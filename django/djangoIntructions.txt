@@ -1,0 +1,226 @@
+_____________________________Creating Django Project_________________________________
+
+
+---- With our Django virtual environment activated, create a new Django project. 
+First navigate to where you want the project to be saved (for these first few assignments, 
+that will be the python_stack/django/django_intro folder). Then run this command, specifying 
+a project name of our choosing:-------
+ 
+ --------------------------------------------------------------------------
+> cd python_stack/django/django_intro
+django_intro> django-admin startproject your_project_name_here
+ --------------------------------------------------------------------------
+
+Let's test this out:
+ --------------------------------------------------------------------------
+django_intro> cd your_project_name_here
+your_project_name_here> python manage.py runserver
+ --------------------------------------------------------------------------
+Open localhost:8000 in a browser window. Hooray for CLIs (command-line interfaces)!
+Press ctrl-c to stop the server. Open up the project folder in your text editor. 
+ --------------------------------------------------------------------------
+
+For every app we want to add to our project, we'll do the following:
+
+--------------------------------------------------------------------------
+your_project_name_here> python manage.py startapp your_app_name_here
+
+The apps in a project CANNOT have the same name as the project.
+--------------------------------------------------------------------------
+
+In the text editor, find the settings.py file. It should be in a folder with the same name as our project. 
+Find the variable INSTALLED_APPS, and let's add our newly created app:
+--------------------------------------------------------------------------
+your_project_name_here/your_project_name_here/settings.py
+   INSTALLED_APPS = [
+       'your_app_name_here', # added this line. Don't forget the comma!!
+       'django.contrib.admin',
+       'django.contrib.auth',
+       'django.contrib.contenttypes',
+       'django.contrib.sessions',
+       'django.contrib.messages',
+       'django.contrib.staticfiles',
+   ]    # the trailing comma after the last item in a list, tuple, or dictionary is commonly accepted in Python
+--------------------------------------------------------------------------
+For these next few steps, we are creating the route "/" to be associated with a specific function. 
+In the urls.py file, add a URL pattern for your new app. (You can delete the current admin pattern, 
+or just ignore it for now). You will need to add an import for your views file.
+
+your_project_name_here/your_project_name_here/urls.py
+from django.urls import path, include           # import include
+# from django.contrib import admin              # comment out, or just delete
+urlpatterns = [
+    path('', include('your_app_name_here.urls')),	   
+    # path('admin/', admin.sites.urls)         # comment out, or just delete
+]
+
+
+Next, let's create a new urls.py file in the your_app_name_here folder. Put the following code
+--------------------------------------------------------------------------
+your_project_name_here/your_app_name_here/urls.py
+from django.urls import path     
+from . import views
+urlpatterns = [
+    path('', views.index),	   
+]
+--------------------------------------------------------------------------
+
+And then actually put a function called index in our app's views.py file:
+--------------------------------------------------------------------------
+your_project_name_here/your_app_name_here/views.py
+from django.shortcuts import render, HttpResponse
+def index(request):
+    return HttpResponse("this is the equivalent of @app.route('/')!")
+--------------------------------------------------------------------------
+
+Let's run our app again and check it out at localhost:8000/. Whew. We've done it!
+--------------------------------------------------------------------------
+your_project_name_here> python manage.py runserver
+--------------------------------------------------------------------------
+
+
+
+______________________________________Routing With Parameters_______________________________________
+
+some_project/some_app/urls.py
+urlpatterns = [
+        path('bears', views.one_method),                        # would only match localhost:8000/bears
+        path('bears/<int:my_val>', views.another_method),       # would match localhost:8000/bears/23
+        path('bears/<str:name>/poke', views.yet_another),       # would match localhost:8000/bears/pooh/poke
+    	path('<int:id>/<str:color>', views.one_more),           # would match localhost:8000/17/brown
+]
+
+
+The corresponding functions would then look like this:
+
+some_project/some_app/views.py
+def one_method(request):                # no values passed via URL
+    pass                                
+    
+def another_method(request, my_val):	# my_val would be a number from the URL
+    pass                                # given the example above, my_val would be 23
+    
+def yet_another(request, name):	        # name would be a string from the URL
+    pass                                # given the example above, name would be 'pooh'
+    
+def one_more(request, id, color): 	# id would be a number, and color a string from the URL
+    pass                                # given the example above, id would be 17 and color would be 'brown'
+
+
+
+
+
+__________________________________Response Types & Redirect________________________________________
+
+urls.py-
+from django.urls import path
+from . import views
+urlpatterns = [
+    path('', views.root_method),
+    path('another_route', views.another_method),
+    path('redirected_route', views.redirected_method
+]copy
+
+
+views.py-
+from django.shortcuts import HttpResponse, redirect # add redirect to import statement
+from django.http import JsonResponse
+def root_method(request):
+    return HttpResponse("String response from root_method")
+def another_method(request):
+    return redirect("/redirected_route")
+def redirected_method(request):
+    return JsonResponse({"response": "JSON response from redirected_method", "status": True})
+
+
+
+
+
+
+________________________________________Templates____________________________________________
+
+
+-----Django requires each app to have its own templates folder. Within that folder, store all your HTML templates.----
+
+
+Assuming we've got the folder structure set up properly, we can then render templates in our views.py file like so:
+--------------------------------------------------------------------------
+project_name/app_name/views.py
+from django.shortcuts import render	# notice the import!
+def index(request):
+    return render(request, "index.html")
+--------------------------------------------------------------------------
+
+When we call the render function, our first argument will always be request, 
+and the second argument will be a string indicating which html file to render.
+
+---Passing Data to the Template---
+With Django, we are able to pass data to the template via the render method.
+We do this by passing a single dictionary whose keys will be the variable names available on the template. For example:
+
+--------------------------------------------------------------------------
+project_name/app_name/views.py                               
+from django.shortcuts import render
+def index(request):
+    context = {
+    	"name": "Noelle",
+    	"favorite_color": "turquoise",
+    	"pets": ["Bruce", "Fitz", "Georgie"]
+    }
+    return render(request, "index.html", context)
+--------------------------------------------------------------------------
+
+--------------------------------------------------------------------------
+project_name/app_name/templates/index.html
+<h1>Info From Server:</h1>
+<p>Name: {{name}}</p>
+<p>Color: {{favorite_color}}</p>
+<p>Pets</p>
+<ul>
+{% for pet in pets %}
+   <li>{{pet}}</li>
+{% endfor %}
+</ul>
+--------------------------------------------------------------------------
+Note: You cannot use square brackets with Django's template engine! Instead, use dot notation. 
+
+For example, array[0] becomes {{ array.0 }}
+
+Reminder: You cannot comment out template engine syntax with regular HTML comments (<!-- -->). 
+(Check the documentation if you want to be able to comment it out properly)
+
+
+
+
+
+________________________________________Static Files____________________________________________
+
+The organization and behavior of static files is very similar to templates. 
+Within each app, at the same level as our templates folder, we also need
+a folder called static. Then within that folder, we can save all of our static content 
+(and further subdivide into js, css, and images folders as desired).
+
+In our templates, when we want to reference our static files, 
+we'll first need to add a line indicating we want to use our static files:
+
+<!DOCTYPE html>
+  <html>
+    <head>
+      <meta charset="utf-8">
+      <title>Index</title>
+      {% load static %}		<!-- added this line -->
+
+Then we can reference any static files relative to their location within the folder called static:
+
+<!DOCTYPE html>
+  <html>
+    <head>
+      <meta charset="utf-8">
+      <title>Index</title>
+      {% load static %}
+      <link rel="stylesheet" href="{% static 'css/style.css' %}">    
+      <script src="{% static 'js/script.js' %}"></script>
+    </head>
+    <body>
+    	<img src="{% static 'images/image.jpg' %}" />
+    </body>

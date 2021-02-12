@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Playground</title>
+</head>
+
+<body>
+    <center>
+        <h1 style="margin: 20px; padding: 20px;">Welcome!</h1>
+        <div style="display: inline-block; width: 1200px; align-items: initial;">
+            {% for i in range(times): %}
+            <div class="column" style="background-color: {{color}}; height: 250px; width: 250px; display: inline-block; margin: 10px; padding: 10px;"></div>
+            <!-- <p>{{name}}</p> -->
+            {%endfor%}
+        </div>
+    </center>
+</body>
+
+</html>
