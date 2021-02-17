@@ -1,0 +1,48 @@
+Django utilizes the database to manage sessions, so we'll need to update our database to allow 
+for it to start maintaining session data for us. To do this, we'll run the following command from our terminal:
+
+(djangoPy3Env) project_name> python manage.py migrate
+---------------------------------------------------------------------------------
+
+Excellent. Not only does that annoying warning disappear, but now session is available to us as well 
+(as seen in that last line: Applying sessions.0001_initial... OK).
+
+To use session, we can refer to it in our views.py file. Session is a dictionary to which we can 
+add and retrieve values via keys, like so:
+
+some_project/some_app/views.py
+def some_function(request):
+    request.session['name'] = request.POST['name']
+    request.session['counter'] = 100
+---------------------------------------------------------------------------------
+
+We can also access session directly in our Django templates. Remember, though, 
+that Django templates do not process square brackets, so we'll use dot notation instead:
+
+<p>Name in session is: {{request.session.name}}</p>
+---------------------------------------------------------------------------------
+
+Useful session methods:
+
+request.session['key']
+This will retrieve (get) the value associated with 'key'
+
+request.session['key'] = 'value'
+Set the value that will be stored by 'key' to 'value'
+
+'key' in request.session
+Returns a boolean of whether a key is in session or not
+
+{{ request.session.name }}
+Use dot notation (.) to access request.session keys from templates since square brackets ([]) aren’t allowed there
+
+del request.session['key']
+Deletes a session key if it exists, throws a KeyError if it doesn’t. Use along with try and except 
+since it's better to ask for forgiveness than permission
+
+Note: If you are storing a list in session that is being modified (such as an append), 
+you will need to save the session after the append, like so:
+
+request.session['my_list'] = []
+request.session['my_list'].append("new item")
+request.session.save()

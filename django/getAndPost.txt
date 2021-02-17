@@ -1,0 +1,236 @@
+GET vs. POST Requests
+Objectives:
+Learn how to handle GET requests in Django
+Learn how to handle POST requests in Django
+Learn about CSRF tokens and why we use them
+
+A Django view method will be called regardless of the type of HTTP Request method that was made. 
+ We can check the request method type being received, like so:
+
+from django.shortcuts import render, redirect
+def some_function(request):
+    if request.method == "GET":
+    	print("a GET request is being made to this route")
+    	return render(request, "some_template.html")
+    if request.method == "POST":
+        print("a POST request is being made to this route")
+    	return redirect("/")
+
+
+---Submitting Form Data---
+As you've already seen, getting information from a user via forms is an extremely important part of
+web development. While forms can be submitted as GET or POST requests, we'll typically use them to
+submit POST requests.  In Django we will utilize the request.POST to access any form data that is 
+submitted. (If the form is a GET request, that data can be accessed with request.GET.)
+
+from django.shortcuts import render, redirect
+def some_function(request):
+    if request.method == "GET":
+    	print(request.GET)
+    if request.method == "POST":
+        print(request.POST)
+
+
+One more important thing to note is that any forms being submitted as POST requests must include a CSRF token. 
+This token is used to prevent cross-site request forgery, a malicious kind of attack where a hacker can pretend 
+to be another user and submit data to a site that recognizes that user. Adding a CSRF token to our forms allows 
+Django to add a hidden input field and value that helps our server recognize genuine requests. If you forget to add this,
+Django will kindly provide a clear error message if you attempt to submit a form without a token. Add a token to each
+form with this line:
+
+<form action="/some_route" method="post">
+  {% csrf_token %}
+  <p>Field One: <input name="one" type="text"></p>
+  <p>Field Two: <input name="two" type="text"></p>
+  <button type="submit">Submit</button>
+</form>
+
+
+Remember that the names of the input fields from our form will be the keys we use to access the data in our server. 
+So given the above form, we should be able to retrieve these values:
+
+from django.shortcuts import render, redirect
+def some_function(request):
+    if request.method == "POST":
+        val_from_field_one = request.POST["one"]
+    	val_from_field_two = request.POST["two"]
+
+
+----Creating a Post-Form-----
+
+The first thing to do is to create a route and a method that will show a page with a form on it. 
+Use the following snippets to get set up quickly:
+
+form_test/form_test/urls.py
+from django.urls import path, include
+    
+urlpatterns = [
+    path('', include('form_app.urls')),
+]
+form_test/form_app/urls.py
+from django.urls import path
+from . import views
+                    
+urlpatterns = [
+    path('', views.index),
+]
+
+
+form_test/form_app/views.py
+from django.shortcuts import render
+def index(request):
+    return render(request,"index.html")
+
+Set up your template folder structure and create an index.html with the following form in the body:
+
+form_test/form_app/templates/index.html
+<h1>Index Page</h1>
+<h3>Create a User</h3>
+<form action='/users' method='post'>
+    {% csrf_token %}
+    Name: <input type='text' name='name'>
+    Email: <input type='text' name='email'>
+    <button type='submit'>Create User</button>
+</form>
+
+Once you've done the above, start up your server and visit localhost:8000/.
+ you should see the index page with a form on it. Let's break down the critical parts of this form:
+
+action attribute
+This is the route that will process the form (not the one that shows the form--that's "/"). We'll set this up shortly.
+
+method attribute
+Our options are GET and POST; most likely, we'll want this to be a POST request (but if you don't set it, the default is GET)
+
+CSRF token
+This token is used to prevent cross-site request forgery, a malicious kind of attack where a hacker can pretend to
+ be another user and submit data to a site that recognizes that user. Adding a CSRF token to our forms allows Django 
+ to add a hidden input field and value that helps our server recognize genuine requests. If you forget to add this, 
+ Django will kindly provide a clear error message if you attempt to submit a form without a token.
+
+input elements
+These are the parts of the form that actually gather data from the user. Check here for type options. 
+Also check here for other form elements like select (dropdowns) and textarea. Each element should have a
+ unique value for its name attribute.
+
+a way to submit the form
+This can either be <input type='submit'> or <button type='submit'>Submit</button>, but NOT <input type='button'>.
+
+Let's determine what should happen when the form is actually submitted. We indicated above, with the action attribute, 
+that this POST request would be handled with the route /users, so let's add this to route to our app urls.py:
+
+form_test/form_app/urls.py
+from django.urls import path
+from . import views
+                    
+urlpatterns = [
+    path('', views.index),
+    path('users',views.create_user)
+]
+
+Now that we have the route, let's set up the method:
+
+form_test/form_app/views.py
+from django.shortcuts import render
+def index(request):
+    return render(request,"index.html")
+        
+def create_user(request):
+    print("Got Post Info....................")
+    print(request.POST)
+    return render(request,"index.html")
+
+The above method will print out a message and the form data to the terminal. Run your server and try submitting a form. 
+What do you see in the terminal? You should see something like this:
+
+<QueryDict: {'csrfmiddlewaretoken': ['Yh5hBKVirURud5syD3nrsRdEoME766Cml3Z2ED1M9z5sIi7gxeak0LJzSCalfX9v'], 
+'name': ['John'], 'email': ['john@doe.com']}>
+
+Notice that the form data is being sent to our server in a dictionary. We see both the name and the email 
+values that were input by the user. Let's modify our method to grab these values individually:
+
+from django.shortcuts import render
+def index(request):
+    return render(request,"index.html")
+        
+def create_user(request):
+    print("Got Post Info....................")
+    name_from_form = request.POST['name']
+    email_from_form = request.POST['email']
+    print(name_from_form)
+    print(email_from_form)
+    return render(request,"index.html")
+
+Restart your server and try submitting the form again. What do you see in the terminal now? 
+Notice how we were able to extract just the name and the email.
+
+Accessing Data: request.POST['name_of_input']
+The name we gave to each HTML input was significant. On the server-side, we can access data that was input into 
+a field from a user through the request.post dictionary by providing the name of the input as the key. To see 
+the entire form, you can print request.post.
+
+Lastly, note that the type of anything that comes in through request.post will be a "string" no matter what. 
+If you want that value to be identified as an actual number you'll have to type cast it.
+
+Finally, let's display this data on a new HTML page! We'll soon learn why it's not a great idea to render
+ immediately as a response to a POST request, but more on that later.
+
+Make a new html file in your templates called show.html and add this code to the body:
+
+form_test/form_app/templates/show.html
+<h1>Show Page</h1>
+<h3>Info Submitted:</h3>
+    <p>Name: {{ name_on_template }}</p>
+    <p>Email: {{ email_on_template }}</p>
+    
+Next, modify your method in views.py:
+
+form_test/form_app/views.py
+from django.shortcuts import render
+def index(request):
+    return render(request,"index.html")
+        
+def create_user(request):
+    print("Got Post Info....................")
+    name_from_form = request.POST['name']
+    email_from_form = request.POST['email']
+    context = {
+    	"name_on_template" : name_from_form,
+    	"email_on_template" : email_from_form
+    }
+    return render(request,"show.html",context)
+
+----Instead of show first do this----
+Set up a route and method that will render a template to show the form
+Set up a route and method to process the form data that will redirect
+Set up a route and method that will render a template indicating the form was successfully processed
+
+Try changing your form_test project to follow the three steps. In addition to the following changes,
+ make a success.html file that will display a success message to the user.
+
+form_test/form_app/urls.py
+from django.urls import path
+from . import views
+                    
+urlpatterns = [
+    path('', views.index),
+    path('create_user', views.create_user),
+    path('success', views.success)
+]
+form_test/form_app/views.py
+from django.shortcuts import render, redirect # don't forget to import redirect!
+def index(request):
+    # this is the route that shows the form
+    return render(request,"index.html")
+def create_user(request):
+    # this is the route that processes the form
+    name_from_form = request.POST['name']
+    email_from_form = request.POST['email']
+    context = {
+    	"name_on_template" : name_from_form,
+    	"email_on_template" : email_from_form
+    }
+    return redirect("/success")
+def success(request):
+    # this is the success route
+    return render(request,"success.html")
