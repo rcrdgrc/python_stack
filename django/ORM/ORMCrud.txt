@@ -1,0 +1,166 @@
+--------------ORM CRUD Commands----------------------
+
+Overview of Commands
+Creating a new record
+ClassName.objects.create(field1="value for field1", field2="value for field2", etc.)
+Reading existing records
+Methods that return a single instance of a class
+ClassName.objects.first() - gets the first record in the table
+ClassName.objects.last() - gets the last record in the table
+ClassName.objects.get(id=1) - gets the record in the table with the specified id
+this method will throw an error unless only and exactly one record matches the query
+Methods that return a list of instances of a class
+ClassName.objects.all() - gets all the records in the table
+ClassName.objects.filter(field1="value for field1", etc.) - gets any records matching the query provided
+ClassName.objects.exclude(field1="value for field1", etc.) - gets any records not matching the query provided
+Updating an existing record
+c = ClassName.objects.get(id=1)
+c.field_name = "some new value for field_name"
+c.save()
+Deleting an existing record
+c = ClassName.objects.get(id=1)
+c.delete()
+Other helpful methods
+Displaying records
+ClassName.objects.get(id=1).__dict__ - shows all the values of a single record as a dictionary
+ClassName.objects.all().values() - shows all the values of a QuerySet (i.e. multiple instances)
+Ordering records
+ClassName.objects.all().order_by("field_name") - orders by field provided, ascending
+ClassName.objects.all().order_by("-field_name") - orders by field provided, descending
+
+To take a deeper dive into any of these commands, keep scrolling. For the next few assignments, 
+we'll be running all these commands in the shell. Once we go full stack, we will utilize these
+ queries in our views.py file. The examples below utilize this model:
+
+class Movie(models.Model):
+    title = models.CharField(max_length=45)
+    description = models.TextField()
+    release_date = models.DateField()
+    duration = models.IntegerField()
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+CREATING
+To add a new record to a table:
+ClassName.objects.create(field1="value for field1", field2="value for field2", etc.)
+SQL Equivalent: "INSERT INTO tablename (field1, field2) VALUES ('value for field1', 'value for field2');"
+The create method returns an instance of the model with the values that were just added. This means that if
+ we wanted to do something with the instance after creating in our database, we could set a variable and use it like so:
+
+newly_created_movie = Movie.objects.create(title="The Princess Bride",description="the best movie ever",
+release_date="1987-09-25",duration=98)
+
+print(newly_created_movie.id)	# view the new movie's id
+Another way to add a row to our database is by creating an instance of the class (think back to 
+the OOP section) and saving it, like so:
+
+newly_created_movie = Movie(title="The Princess Bride",description="the best movie ever",release_date="1987-09-25",duration=98)
+newly_created_movie.save()
+By default, all fields in our models are non-nullable, meaning all fields are required upon creation. 
+If you want to change this default behavior, check out Django's documentation on the null property.
+
+READING
+There are several ways that we might want to retrieve records from the database.
+
+Multiple Records
+There are several different methods that will return multiple records (or lists of instances).
+
+All
+To get all the rows from a given table:
+
+ClassName.objects.all()
+SQL Equivalent: "SELECT * FROM tablename;"
+The all method returns a list (technically a QuerySet) of instances of the model.
+
+all_movies = Movie.objects.all()
+Filter (WHERE)
+To specify criteria for retrieving rows from a given table:
+
+ClassName.objects.filter(field1="value to match", field2="another value", etc.)
+SQL Equivalent: "SELECT * FROM tablename WHERE field='value to match' AND field2='another value';"
+The filter method also returns a list (technically a QuerySet) of instances of the model.  
+
+some_movies = Movie.objects.filter(release_date='2018-11-16')
+Exclude (WHERE NOT)
+To specify criteria for filtering out records to retrieve:
+
+ClassName.objects.exclude(field1="value to match", field2="another value", etc.)
+SQL Equivalent: "SELECT * FROM tablename WHERE NOT (field='value to match' AND field2='another value');"
+The exclude method also returns a list (technically a QuerySet) of instances of the model.  
+
+other_movies = Movie.objects.exclude(release_date='2018-11-16')
+When we have a list of instances, we can iterate through that list and view each instance and its values:
+
+for m in all_movies:    # m represents each movie instance as we iterate through the list
+    print(m.title)	# that means m has all the properties of the Movie class, including title, release_date, etc.
+Single Records
+There are also several different methods that will return a single instance of a class.
+
+Get
+To get a specific row from the table, specify a field and value.
+
+ClassName.objects.get(field1="unique value")
+SQL Equivalent: "SELECT * FROM tablename WHERE field1='unique value' LIMIT 1;"
+The get method returns a single instance of the model.
+
+one_movie = Movie.objects.get(id=7)
+If our specified value(s) finds no matching results or more than one matching result from the database,
+ we will get an error. This is why we should really only use fields that we know will be unique, with 
+ values that we are certain are in the database. For this reason, id is the most common field to use with get.
+
+First
+To get the first row from the table:
+
+ClassName.objects.first()
+SQL Equivalent: "SELECT * FROM tablename ORDER BY id LIMIT 1;"
+The first method returns a single instance of the model. If no order is specified before calling 
+the first method, the data is ordered by the primary key.
+
+first_movie = Movie.objects.first()
+Last
+To get the last row from the table:
+
+ClassName.objects.last()
+SQL Equivalent: "SELECT * FROM tablename ORDER BY id DESC LIMIT 1;"
+The last method returns a single instance of the model. Again, if no order is specified before
+ calling the last method, the data is ordered by the primary key.
+
+last_movie = Movie.objects.last()
+When we are working with a single instance, we can access any of the instance's values with dot notation. For example:
+
+print("Movie 7", one_movie.title)
+print("First movie", first_movie.release_date)
+print("Last movie", last_movie.description)
+UPDATING
+In order to update an existing record, we first need to obtain the instance of the record we
+ want to modify and then use the save method to commit those changes to the database. For example:
+
+movie_to_update = Movie.objects.get(id=42)	# let's retrieve a single movie,
+movie_to_update.description = "the answer to the universe"	# update one/some of its field values
+movie_to_update.title = "The Hitchhiker's Guide to the Galaxy"
+movie_to_update.save()	# then make sure all changes to the existing record get saved to the database
+The equivalent SQL statement would be:
+
+"UPDATE tablename SET field1='new value', field2='new value' WHERE id=id_value;"
+
+DELETING
+In order to delete an existing record, we again need to obtain the instance of the record and
+ then use the delete method. For example:
+
+movie_to_delete = Movie.objects.get(id=2)	# let's retrieve a single movie,
+movie_to_delete.delete()	# and then delete it
+The equivalent SQL statement would be:
+
+"DELETE FROM tablename WHERE id=2;"
+Helpful Tip
+You've probably noticed in the shell that printing whole objects just results in something 
+like <Movie Object (1)>, which is not particularly helpful. To change how our models display, 
+we can override the __str__ method in the class. This is pretty handy and shows how we can 
+leverage some of Python's magic methods to make our lives easier.
+
+class Movie(models.Model):
+    # fields removed for brevity
+    def __str__(self):
+        return f"<Movie object: {self.title} ({self.id})>"
+OPTIONAL: iPython
+Also, if you would like, you could also install iPython (pip install ipython). 
+This replaces the default shell with a prettier one (TAB indent works, line numbers, syntax highlighting, etc).

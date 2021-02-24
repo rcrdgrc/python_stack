@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta2/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-BmbxuPwQa2lc/FVzBcNJ7UAyJxM6wuqIj61tLrc4wSX0szH/Ev+nYRRuWlolflfl" crossorigin="anonymous">
+    <title>Ninja Gold</title>
+
+</head>
+
+<body style="padding: 0; margin: 50px;">
+    <div class="container">
+        <h3>
+            Your Gold:
+            <medium class="text-muted">{{request.session.score}}</medium>
+        </h3>
+        <div class="row" style="margin-top: 20px;">
+            <div class="col-sm">
+                <form action='process_money' method='post'>
+                    {% csrf_token %}
+                    <input type="hidden" name="which_form" value="farm">
+                    <div class="card text-center" style="width: 18rem;">
+                        <div class="card-body">
+                            <h5 class="card-title">Farm</h5>
+                            <br>
+                            <p class="card-text">(earn 10 to 20 golds)</p>
+                            <br>
+                            <button type="submit" class="btn btn-success">Find Gold!</button>
+                        </div>
+                    </div>
+                </form>
+
+            </div>
+            <div class="col-sm">
+                <form action='process_money' method='post'>
+                    {% csrf_token %}
+                    <input type="hidden" name="which_form" value="cave">
+                    <div class="card text-center" style="width: 18rem;">
+                        <div class="card-body">
+                            <h5 class="card-title">Cave</h5>
+                            <br>
+                            <p class="card-text">(earn 5 to 10 golds)</p>
+                            <br>
+                            <button type="submit" class="btn btn-success">Find Gold!</button>
+                        </div>
+                    </div>
+                </form>
+
+            </div>
+            <div class="col-sm">
+                <form action='process_money' method='post'>
+                    {% csrf_token %}
+                    <input type="hidden" name="which_form" value="home">
+                    <div class="card text-center" style="width: 18rem;">
+                        <div class="card-body">
+                            <h5 class="card-title">House</h5>
+                            <br>
+                            <p class="card-text">(earn 2 to 5 golds)</p>
+                            <br>
+                            <button type="submit" class="btn btn-success">Find Gold!</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="col-sm">
+                <form action='process_money' method='post'>
+                    {% csrf_token %}
+                    <input type="hidden" name="which_form" value="casino">
+                    <div class="card text-center" style="width: 18rem;">
+                        <div class="card-body">
+                            <h5 class="card-title">Casino</h5>
+                            <br>
+                            <p class="card-text">(earn 0 to 50 golds)</p>
+                            <br>
+                            <button type="submit" class="btn btn-success">Find Gold!</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    <br>
+    <div class="card">
+        <h5 class="card-header"> Activities:</h5>
+        <div class="card-body">
+            {% for activity in request.session.activities %}
+            <!-- <p>{{activity.0}}</p> -->
+            {% if activity.1 == "1" %}
+            <p style="color: green;" class="card-text">{{activity.0}}</p>
+            <script src="https://cdn.jsdelivr.net/gh/mathusummut/confetti.js/confetti.min.js"></script>
+            <script>
+                confetti.start()
+            </script>
+            {% elif activity.1 == "2" %}
+            <p style="color: red;" class="card-text">{{activity.0}}</p>
+            <script>
+                confetti.stop()
+            </script>
+            {% else %}
+            <p class="card-text">With supporting text below as a natural lead-in to additional
+                content.</p>
+            {% endif %}
+            {% endfor %}
+        </div>
+    </div>
+</body>
+
+</html>

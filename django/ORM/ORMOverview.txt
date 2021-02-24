@@ -1,0 +1,221 @@
+The Why
+Let's get started using the ORM! Models are the M of the MTV architecture. Remember that the goal of 
+modularizing is to separate our code so that each part has a specific purpose.
+
+The purpose of models is to do all the work of interfacing with the database, whether retrieving 
+information from or putting information into it. The phrase skinny controllers and fat models is 
+often used to describe this design pattern:
+
+As a general rule, any heavy logic, including database queries, should be performed by the Model. 
+If a controller (in Django, that's the views.py file) needs to perform logic or get information from
+ the database, it should use a Model method to do so.
+
+The How
+When we created our app, the Django CLI actually set up the models.py file for us. So far we have
+ left it empty, but it's finally time to use it!
+
+Models are simply classes that map to our database tables. We'll start with just one table,
+ and then talk about adding relationships over the next few modules and assignments.
+  On the left is the ERD as we might have designed it in MySQL Workbench. On the right 
+  is the corresponding class we will actually write in our models.py file.
+
+Hypothetical MySQL Workbench Diagram
+
+
+my_app/models.py
+from django.db import models
+    
+class Movie(models.Model):
+    title = models.CharField(max_length=45)
+    description = models.TextField()
+    release_date = models.DateTimeField()
+    duration = models.IntegerField()
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+Let's break down the code in the models.py file a little bit:
+
+Why models.Model?
+First, notice we are inheriting from the models.Model base class. If you didn't have a chance to practice 
+inheritance back in the OOP chapters, inheritance is an important OOP principle that allows us to write 
+code in one class (parent) and then allow other classes (children) to inherit that same code without having 
+to re-write it in the child classes.
+
+Practically speaking, this means that, even though we don't see additional code, Django's Model class
+ provides a lot right out of the box. There's no way the Django developers could have anticipated all 
+ the different classes we as developers might create, but what they could anticipate was that we'd need 
+ classes, and that these classes would need to be created in our database, and they'd each need a
+  primary key field. With that in mind, they created one generic parent Model class that contains 
+  these fields and functionalities.
+
+You'll notice, for example, that we do not need to type an id field into any of our classes--Django 
+automatically adds a field called "id" to every class inheriting from models.Model and sets it to be 
+an auto-incremented field. We also don't have to write a separate __init__ method for each class.
+ Very shortly, we'll also see the models come pre-loaded with all the CRUD functionality so we 
+ aren't required to write out all the SQL statements.
+
+Other Fields
+Besides the id field, you'll notice that every field from our ERD has a corresponding 
+line in our class. Each field is named and its type is specified. (We won't talk about 
+relationship fields yet--those will come soon enough!) This is a great opportunity to begin 
+reading documentation. The documentation will tell you what is required for each field type 
+and what other options you can specify for each field. You can find a full list of allowed 
+column types here. Below is a list of a few common types with some brief explanations to help you get started.
+
+CharField
+Any text that a user may enter. This has one required parameter, max_length, that is the maximum length of text that can be saved.
+
+TextField
+Like a CharField, but with no maximum length. Your user could copy the entire text of the Harry Potter 
+series into the field and it would save in the database correctly.
+
+IntegerField
+Holds an integer value
+
+FloatField
+Holds a float value; this is good for numbers with potentially varying numbers of decimal places
+
+DecimalField
+This is a good field for a number with a fixed number of decimal places, like currency. There are 
+2 required parameters: max_digits refers to the total number of digits (before and after the decimal 
+place), and decimal_places refers to how many decimal places.
+
+BooleanField
+Holds a boolean value
+
+DateTimeField
+Used for a combination of a specific date and time. This field can take two very useful optional
+ parameters. Setting the auto_now_add argument to True adds the current date/time when an object 
+ is created. Setting auto_now=True automatically updates any time the object is modified.
+
+
+ ---------------Migrations-----------------------------
+
+ Now that we've set up our models, it's time to create an actual database with some tables! Luckily, 
+ Django can do the whole job for us with minimal code.
+
+To do this, (basically the equivalent of forward engineering in MySQL Workbench), we are going to run a
+ couple of commands from the terminal.
+
+  > python manage.py makemigrations
+  > python manage.py migrate
+
+makemigrations is a kind of staging. When this command runs, Django looks through all our code, 
+finds any changes we made to our models that will affect the database, and then formulates the 
+correct Python code to move on to the next step. Note that if this step has errors, the next step 
+will not work, so you will need to fix any errors before you can move on to migrating.
+
+migrate actually applies the changes made above. This step is where the SQL queries are actually built and executed.
+
+The migration process is split into two steps so that Django can check and make sure you wrote code
+ it can understand before moving on to the next step.
+
+A Few Notes:
+Never delete migration files and always makemigrations and migrate anytime you change something
+ in your models.py files – that's what updates the actual database so it reflects what's in your models.
+For now we are going to be using SQLite, a SQL database that comes pre-packaged with Django. 
+It is best used in a development environment because it is stored as local memory in a file 
+and as such is very fast. It is generally not recommended for use once our application is 
+ready for production. Luckily, changing what kind of database we are using is quite simple.
+ In the deployment section, we'll learn how to switch to a MySQL database.
+Django ORM models and queries will always be the same no matter which database we are using.
+
+-------Shell----------
+
+> python manage.py shell
+
+Once we're in the shell, we can access all of our functions and classes in our files. 
+To do so, we just need to specify which modules (files) we need. Since we are interested 
+specifically in working with our models, let's import them:
+
+>>> from your_app_name_here.models import *
+
+----------Putting Everything Together--------------------------
+
+All the queries you have been running in the shell will now be in your controller (i.e. views.py file), where appropriate.
+
+To make sure our controller knows about our models, we just need an import statement at the top. 
+Then we can utilize the methods we have learned where needed. Using our Movie class, for example:
+
+my_app/views.py
+# other imports
+from .models import Movie
+# show all of the data from a table
+def index(request):
+    context = {
+    	"all_the_movies": Movie.objects.all()
+    }
+    return render(request, "index.html", context)
+     
+
+ my_app/templates/index.html 
+    <h1>All Movies</h1>
+    <ul>
+    {% for movie in all_the_movies %}
+        <li>{{ movie.title }}</li>
+    {% endfor %}
+    </ul>
+
+
+-------Altering Models after Creation-----------------
+
+Whenever we need to make changes to our models after the initial migration (i.e. add fields, 
+remove fields, or alter properties of existing fields), we will need to re-run the makemigrations 
+and migrate commands. Say, for example, you created a table, but then realized later you wanted 
+to add another field. If you find yourself seeing an error like this, come back to this module!
+
+
+
+This error is telling us that we are trying to add a field that isn't allowed to be 
+null, but any existing data will obviously not have values for that field. 
+(Even if you haven't actually added any data, you'll still get this error.)
+ To make sure our existing data maintains integrity, we need to provide a
+  value for this new field for any existing rows of data. Django gives you 
+  two options. Option 1 allows us to specify a value right here in the shell.
+   Option 2 allows us to quit attempting to make migrations and update our 
+   models to add an argument to specify a default.
+
+Option 1
+This is the quickest, simplest option. Type 1 and hit enter. You'll then see a prompt that asks what value you would like:
+
+
+The value you provide should be compatible with the field type: type the value next to 
+the >>> and hit enter. For example, if it's a CharField, you should provide a string 
+(eg. "no value" or ""). For an IntegerField, provide a number value (eg. 0). Hint: for
+ a DateField or DateTimeField, read the message above the >>> prompt!
+
+The only exception is for a ForeignKeyField--the command line tool doesn't really allow for complex 
+imports and retrievals, so you can actually specify a value for that field's primary key.
+ In our case, that will be an integer.
+
+Once done, don't forget to run migrate!
+
+Option 2
+If you know you want to provide a default value for any existing and potentially future entries 
+for this new field in your table, type 2 and hit enter. In your model, revise the new field by 
+adding a default argument and value. You might also consider setting the field to be nullable, 
+if that field is optional. For example:
+
+age = models.IntegerField(default=200)	# if no age is entered for a new/existing, age will be set to 200
+age = models.IntegerField(null=True)	# if no age is provided, the field will remain empty
+Video Overview
+
+Option 3 - Everything's broken, I have no options left
+If you have tried everything and hit a brick wall with your database, or corrupted your data beyond repair,
+ as a last-ditch effort you can delete your database and start over from scratch. To do this, you will need 
+ to delete the following files/directories:
+
+db.sqlite3
+your_app_name/migrations
+your_app_name/__pycache__
+
+After you delete these, you will need to re-run your makemigrations and migrate commands. When you make 
+your migrations, you will need to include the app name:
+
+python manage.py makemigrations your_app_name
+python manage.py migrate
+
+IMPORTANT: There is a reason that this is so difficult to do! Databases should as a rule never
+ be deleted after creation, as this interferes with the reliability of your trusted data source. 
+ We typically want to store any changes ever made to a database so that we can audit it at any time, 
+ so this should only be used in an emergency.

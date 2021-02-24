@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta2/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-BmbxuPwQa2lc/FVzBcNJ7UAyJxM6wuqIj61tLrc4wSX0szH/Ev+nYRRuWlolflfl" crossorigin="anonymous">
+    <title>Ninja Dojo</title>
+</head>
+
+<body>
+    <center>
+        <div class="d-flex justify-content-center">
+            <div class="card" style="width: 25rem; margin: 20px;">
+                <h3>Add Dojo</h3>
+                <form style="padding: 20px;" action='/addDojo' method='post' class="form-inline justify-content-center">
+                    {% csrf_token %}
+                    <div class="row">
+                        <div class="col">
+                            <input type="text" class="form-control" name="name" placeholder="Name" aria-label="Name">
+                        </div>
+                    </div>
+                    <br>
+                    <div class="row">
+                        <div class="col">
+                            <input type="text" class="form-control" name="city" placeholder="City" aria-label="City">
+                        </div>
+                    </div>
+                    <br>
+                    <div class="row">
+                        <div class="col">
+                            <input type="text" class="form-control" name="state" placeholder="State" aria-label="State">
+                        </div>
+                    </div>
+                    <br>
+                    <button type="submit" class="btn btn-primary">Add</button>
+                </form>
+            </div>
+            <div class="card" style="width: 25rem; margin: 20px;">
+                <h3>Add Ninja</h3>
+                <form style="padding: 20px;" action='/addNinja' method='post' class="form-inline justify-content-center">
+                    {% csrf_token %}
+                    <div class="row">
+                        <div class="col">
+                            <input type="text" class="form-control" name="first_name" placeholder="First Name"
+                                aria-label="First Name">
+                        </div>
+                    </div>
+                    <br>
+                    <div class="row">
+                        <div class="col">
+                            <input type="text" class="form-control" name="last_name" placeholder="Last Name"
+                                aria-label="Last Name">
+                        </div>
+                    </div>
+                    <br>
+                    <div class="row">
+                        <div class="col">
+                            <div class="form-group">
+                                <select name="dojo" class="form-control" id="exampleFormControlSelect1">
+                                    <option selected disabled>Click to choose Dojo</option>
+                                    {% for dojo in dojos %}
+                                    <option value="{{dojo.name}}">{{dojo.name}}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    <br>
+                    <button type="submit" class="btn btn-primary">Add</button>
+                </form>
+            </div>
+        </div>
+        <br>
+        <hr>
+        <br>
+        {% if user_count == 0 %}
+        <p style="margin-top: 30px;" class="card-text">No Users Added</p>
+        {% else %}
+        <h1 style="color: green;">All the Dojos</h1>
+        <ul style="padding-top: 20px;">
+            {% for dojo in dojos %}
+            <li style="margin-right: 50px;" type="none">
+                <b>
+                    {{dojo.name}}
+                </b>
+                <ul style="width: 130px; margin-left: 100px ;">
+                    {% for ninja in dojo.ninjas.all %}
+                    <li style="padding: 0;"><em>{{ninja.first_name}}</em> {{ninja.last_name}}</li>
+                    {% endfor %}
+                </ul>
+            </li>
+            {% endfor %}
+        </ul>
+        {% endif %}
+    </center>
+</body>
+
+</html>

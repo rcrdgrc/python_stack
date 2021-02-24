@@ -1,0 +1,29 @@
+There are multiple ways we can make use of the hidden input field. In this tab, we are going to look at just one example. Suppose we have two forms within our index page:
+
+<form method="post" action="/process">
+    {% csrf_token %}
+    <input type="hidden" name="which_form" value="register">
+    <input type="text" name="first_name">
+    <input type="text" name="last_name">
+    <input type="text" name="email">
+    <input type="password" name="password">
+    <input type="submit" value="Register">
+</form>
+<form method="post" action="/process">
+    {% csrf_token %}
+    <input type="hidden" name="which_form" value="login">
+    <input type="text" name="email">
+    <input type="password" name="password">
+    <input type="submit" value="Login">
+</form>
+
+Notice that both forms submit their data to the POST /process route. How will we know which form was submitted? 
+Each of the forms also has a hidden input with the same name, but different values. In this example, we are 
+using the name "which_form".
+
+In the POST /process route, we could do something like this to process appropriately depending on which form was submitted:
+
+if request.POST['which_form'] == 'register':
+  //do registration process
+elif request.POST['which_form'] == 'login':
+  //do login process

@@ -1,0 +1,59 @@
+> python manage.py shell
+
+>>> from dojo_ninja_app.models import *
+
+>>> Dojo.objects.create(name="Cobra Kai", city="Atlanta", state="Georgia")
+
+>>> Dojo.objects.create(name="Miyagi-Do", city="Atlanta", state="Georgia")
+
+>>> Dojo.objects.create(name="Eagle Fang", city="Atlanta", state="Georgia")
+
+>>> c = Dojo.objects.get(id=1)
+
+>>> c.delete()
+
+>>> c = Dojo.objects.get(id=2)
+
+>>> c.delete()
+
+>>> c = Dojo.objects.get(id=3)
+
+>>> c.delete()
+
+>>> Dojo.objects.create(name="Cobra Kai", city="Atlanta", state="Georgia")
+
+>>> Dojo.objects.create(name="Miyagi-Do", city="Atlanta", state="Georgia")
+
+>>> Dojo.objects.create(name="Eagle Fang", city="Atlanta", state="Georgia")
+
+>>> dojo1 = Dojo.objects.get(id=1)
+
+>>> Ninja.objects.create(dojo=dojo1, first_name="Miguel", last_name="Diaz")
+
+>>> Ninja.objects.create(dojo=dojo1, first_name="Bert", last_name="Smith")
+
+>>> Ninja.objects.create(dojo=dojo1, first_name="Hawk", last_name="Hawk")
+
+>>> dojo2 = Dojo.objects.get(id=2)
+
+>>> Ninja.objects.create(dojo=dojo2, first_name="Samantha", last_name="LaRusso")
+
+>>> Ninja.objects.create(dojo=dojo2, first_name="Chris", last_name="Smith")
+
+>>> Ninja.objects.create(dojo=dojo2, first_name="Abe", last_name="Smith")
+
+>>> dojo3 = Dojo.objects.get(id=3)
+
+>>> Ninja.objects.create(dojo=dojo3, first_name="Tory", last_name="Nichols")
+
+>>> Ninja.objects.create(dojo=dojo3, first_name="Big", last_name="Red")
+
+>>> Ninja.objects.create(dojo=dojo3, first_name="Robby", last_name="Keene")
+
+>>> Dojo.objects.first().ninjas.all()
+
+>>> Dojo.objects.last().ninjas.all()
+
+>>> Ninja.objects.last().dojo.name
+
+>>> Dojo.objects.create(name="Miyagi-Fang", city="Atlanta", state="Georgia")

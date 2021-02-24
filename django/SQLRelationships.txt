@@ -1,0 +1,129 @@
+To indicate a one-to-many relationship between models, Django uses a special field, ForeignKey. 
+Consider these models, where one author can write many books and one book can be written by only one author:
+
+class Author(models.Model):
+    name = models.CharField(max_length=255)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+class Book(models.Model):
+    title = models.CharField(max_length=255)
+    author = models.ForeignKey(Author, related_name="books", on_delete = models.CASCADE)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+Notice that rather than having a simple integer field as our foreign key, the Book model 
+has this line: models.ForeignKey(Author, related_name="books", on_delete = models.CASCADE). 
+While the CRUD operations are fundamentally the same, let's take a look at how we create and 
+read when we have a relationship between two models.
+
+CREATING
+Remember that by default, all fields are required. The created_at and updated_at fields will be populated 
+automatically, but the other two fields must be set upon creation. Since title is a CharField, 
+we can pass it a string; but the author field is expecting an instance of the Author class.
+ So to create a record that has this foreign key relationship, we first need to have an instance 
+ of an Author, and then we can pass it like we have any other field:
+
+this_author = Author.objects.get(id=2)	# get an instance of an Author
+my_book = Book.objects.create(title="Little Women", author=this_author)	# set the retrieved author as the author of a new book
+    
+# or in one line...
+my_book = Book.objects.create(title="Little Women", author=Author.objects.get(id=2))
+READING
+Now say we are trying to view books with their associated authors. Joins in Django happen
+ automatically. If you have a book object, you don't need to run any additional query 
+ to get information about the author. If we retrieve an instance of a book:
+
+some_book = Book.objects.get(id=5)
+Just like we are able to view the book's title, we can also view the book's author:
+
+some_book.title		# returns a string that is the title of the book
+some_book.author	# returns the Author instance associated with this book
+Because some_book.author is an instance of the Author class, we can now access the author's fields, like so:
+
+some_book.author.name		# return the name of the author of this book
+some_book.author.id		# returns the id of the author of this book
+Just as we are able to filter by other fields, we can also search based off of a ForeignKey 
+relationship. This code will find all of the books by the author with ID 2:
+
+this_author = Author.objects.get(id=2)
+books = Book.objects.filter(author=this_author)
+    
+# one-line version:
+books = Book.objects.filter(author=Author.objects.get(id=2))
+
+
+Because the Author class has a books field, we can access the books of a given author
+ like so: some_author.books.all()! (You need to say .all because there could potentially be
+  many books connected to this author, not just one.) This can be especially convenient 
+  on a template (we aren't using templates quite yet, but this is a preview!):
+
+book_project/apps/books/views.py
+def index(request):
+    context = {"authors": Author.objects.all()}		# we're only sending up all the authors
+    return render(request, "index.html", context)
+    
+book_project/apps/books/templates/index.html
+<h1>Author List</h1>
+<ul>
+  {% for author in authors %}
+    <li>{{author.name}}
+      <ul>
+    	<!-- looping through each author's books! -->
+        {% for book in author.books.all %}	
+          <li><em>{{book.title}}</em></li>
+        {% endfor %}
+      </ul>
+    </li>
+  {% endfor %}
+</ul>
+
+------------Many to Many Relationships------------
+
+You may remember that in order to use a many-to-many relationship in SQL, you had to construct a 
+third table that contained foreign key relationships to the two tables you wanted to connect.
+Django will do this for you automatically if your model includes a ManyToManyField. We'll use
+ these models as an example, where each publisher can publish many books, and each book can be
+  published by many publishers:
+
+ class Book(models.Model):
+	title = models.CharField(max_length=255)
+	created_at = models.DateTimeField(auto_now_add=True)
+	updated_at = models.DateTimeField(auto_now=True)
+class Publisher(models.Model):
+	name = models.CharField(max_length=255)
+	books = models.ManyToManyField(Book, related_name="publishers")
+	created_at = models.DateTimeField(auto_now_add=True)
+	updated_at = models.DateTimeField(auto_now=True)
+
+Unlike with a ForeignKey, it doesn't matter which model has the ManyToManyField. The model would still
+ work if the Book model has a field named publishers instead (though we would need to put the Publisher class first).
+
+Adding a relationship between two existing records is simple:
+
+this_book = Book.objects.get(id=4)	# retrieve an instance of a book
+this_publisher = Publisher.objects.get(id=2)	# retrieve an instance of a publisher
+    
+# 2 options that do the same thing:
+this_publisher.books.add(this_book)		# add the book to this publisher's list of books
+# OR
+this_book.publishers.add(this_publisher)	# add the publisher to this book's list of publishers
+And to remove a relationship between two existing records:
+
+this_book = Book.objects.get(id=4)	# retrieve an instance of a book
+this_publisher = Publisher.objects.get(id=2)	# retrieve an instance of a publisher
+    
+# 2 options that do the same thing:
+this_publisher.books.remove(this_book)		# remove the book from this publisher's list of books
+# OR
+this_book.publishers.remove(this_publisher)	# remove the publisher from this book's list of publishers
+
+The two methods for adding shown above are equivalent because a ManyToManyField is automatically symmetrical. 
+That is, by adding a book to a publisher, Django will also automatically add the publisher to the book.
+ This means that we can add or look up from the other end without issue.
+
+The syntax to see all books from a given publisher is the same as when doing a reverse look-up on a ForeignKey relationship:
+
+this_publisher.books.all()	# get all the books this publisher is publishing
+this_book.publishers.all()	# get all the publishers for this book
+
+Remember to leave off the parentheses when referring to this collection in your template: this_publisher.books.all.

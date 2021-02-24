@@ -1,0 +1,61 @@
+from books_authors_app.models import *
+
+>>> Book.objects.create(title="C Sharp")
+
+>>> Book.objects.create(title="Java")
+
+>>> Book.objects.create(title="Python")
+
+>>> Book.objects.create(title="PHP")
+
+>>> Book.objects.create(title="Ruby")
+
+>>> Authors.objects.create(name="Jane Austen")
+
+>>> Authors.objects.create(name="Emily Dickinson")
+
+>>> Authors.objects.create(name="Fyodor Dostoevsky")
+
+>>> Authors.objects.create(name="William Shakespeare")
+
+>>> Authors.objects.create(name="Lau Tzu")
+
+c = Book.objects.get(title="C Sharp")
+>>> c.title = "C#"
+>>> c.save()
+
+>>> a.name = "Bill Shakespeare"
+>>> a.save()
+>>> a.name
+
+>>> firstAuthor = Authors.objects.first()
+>>> firstAuthor.books.add(Book.objects.get(id=1))
+>>> firstAuthor.books.add(Book.objects.get(id=2))
+
+>>> secondAuthor = Authors.objects.get(id=2)
+>>> secondAuthor.books.add(Book.objects.get(id=1))
+>>> secondAuthor.books.add(Book.objects.get(id=2))
+>>> secondAuthor.books.add(Book.objects.get(id=3))
+
+>>> thirdAuthor = Authors.objects.get(id=3)
+>>> thirdAuthor.books.add(Book.objects.get(id=1))
+>>> thirdAuthor.books.add(Book.objects.get(id=2))
+>>> thirdAuthor.books.add(Book.objects.get(id=3))
+>>> thirdAuthor.books.add(Book.objects.get(id=4))
+
+>>> fourthAuthor = Authors.objects.get(id=4)
+>>> fourthAuthor.books.add(Book.objects.get(id=1))
+>>> fourthAuthor.books.add(Book.objects.get(id=2))
+>>> fourthAuthor.books.add(Book.objects.get(id=3))
+>>> fourthAuthor.books.add(Book.objects.get(id=4))
+>>> fourthAuthor.books.add(Book.objects.get(id=5))
+
+>>> Book.objects.get(id=3).authors.all()
+
+>>> firstAuthor = Book.objects.get(id=3).authors.first()
+>>> Book.objects.get(id=3).authors.remove(firstBook)
+
+>>> Book.objects.get(id=2).authors.add(Authors.objects.get(id=5))
+
+>>> Authors.objects.get(id=3).books.all()
+
